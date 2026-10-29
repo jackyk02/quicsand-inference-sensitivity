@@ -38,6 +38,7 @@ Both analyses are observational. A controlled sweep (TapeBox `--speed`) would se
 
 ```
 data/windows.csv       one row per (recording, policy run, 10-min window); 552 rows
+scripts/reproduce.sh         runs the whole pipeline
 scripts/extract_windows.py   builds windows.csv from TapeBox replay output (needs the raw traces)
 scripts/plot_share.py        figures against share of sandbox time waiting on the model
 scripts/plot_latency.py      figures against median model latency
@@ -47,31 +48,22 @@ APPENDIX_B.md                the paper text and captions
 
 `windows.csv` columns: `recording, run, window, inference_share, resident_h, judged, on_time, tool_calls_done, fleet_usd_per_h, median_model_s, model_calls`. The `fleet_usd_per_h` column is left over from an earlier cost analysis and is unused.
 
-## Reproduce the figures (no raw traces needed)
+## Reproduce
+
+Requirements: a TapeBox checkout with its virtualenv (tested at commit `1dadbd09fc6b6082fcbef9c8f2fde671e615a632`) and the TapeBox replay traces (about 1.1 TB) under `$TAPEBOX/output/replay/<bench>/<recording>/<policy>/`, including the uncontended reference `strict-ref/strict-speed0`. Fetch the traces from the project's trace bucket, for example `aws s3 sync s3://<bucket>/output/replay $TAPEBOX/output/replay`.
 
 ```bash
-git clone https://github.com/depetrol/TapeBox     # tested at 1dadbd09fc6b6082fcbef9c8f2fde671e615a632
-cd TapeBox && python -m venv .venv && .venv/bin/pip install -e .[host] && cd ..
-export TAPEBOX=$PWD/TapeBox                       # only the plot style module is used
-$TAPEBOX/.venv/bin/python scripts/plot_share.py   # writes figures/on_time_vs_inference_share*.{pdf,png}
-$TAPEBOX/.venv/bin/python scripts/plot_latency.py # writes figures/on_time_vs_model_latency*.{pdf,png}
+git clone https://github.com/depetrol/TapeBox
+(cd TapeBox && python -m venv .venv && .venv/bin/pip install -e .[host])
+export TAPEBOX=$PWD/TapeBox
+scripts/reproduce.sh        # traces -> data/windows.csv -> figures/
 ```
 
-Any Python with `matplotlib` works if `TAPEBOX` points at a TapeBox checkout (the scripts import `tapecollect.plot.style` from it).
-
-## Regenerate `windows.csv` (needs the raw replay traces)
-
-The raw traces are not in this repository (about 1.1 TB). They come from the TapeBox replay runs of `strict`, `overcommit` and `quicksand` on AlgoTune, Terminal-Bench 4.0 and Terminal-Bench Science. Place them under `$TAPEBOX/output/replay/<bench>/<recording>/<policy>/` (including `strict-ref/strict-speed0`, the uncontended reference), then run one command per recording and concatenate the results (header once):
-
-```bash
-for rec in algotune/run4-max-50 algotune/run1-deepseek-v4.1-flash \
-           terminal-bench-4.0/run2-medium terminal-bench-4.0/run1-deepseek-v4.1-flash \
-           terminal-bench-science/run1-rand50; do
-  $TAPEBOX/.venv/bin/python scripts/extract_windows.py out-$(basename $rec).csv $rec
-done
-```
+`reproduce.sh` runs `extract_windows.py` on the five recordings (AlgoTune with Sonnet and DeepSeek, Terminal-Bench 4.0 with Sonnet and DeepSeek, Terminal-Bench Science), concatenates the results into `data/windows.csv`, and redraws all four figures. Extraction is the slow step (hours on a cold cache; the TapeBox index and analysis caches are written next to the scripts and speed up reruns).
 
 `extract_windows.py` calls TapeBox's `tapecollect.plot.compare` with `--reference-stat max`, a 1.10 threshold and a 1000 ms floor, the on-time definition from TapeBox commit 5a1580d.
+
+To redraw only the figures from the committed CSV, skip the extraction: `$TAPEBOX/.venv/bin/python scripts/plot_share.py` and `scripts/plot_latency.py` (any Python with `matplotlib` works if `TAPEBOX` points at a TapeBox checkout, which supplies the plot style module).
 
 ## Caveats
 

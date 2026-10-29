@@ -1,5 +1,5 @@
 __pycache__/
 *.pyc
-index-cache/
-analyse-cache/
+index-cache
+analyse-cache
 .env

@@ -15,10 +15,10 @@ Windows with fewer than 20 judged tool calls are dropped. We compare QuicSand (`
 
 | Model Inference Time (% of sandbox time) | Overcommit | QuicSand |
 |---|---|---|
-| < 30% | 37% | 85% |
-| 30–50% | 58% | 88% |
-| 50–70% | 74% | 94% |
 | > 70% | 87% | 96% |
+| 50–70% | 74% | 94% |
+| 30–50% | 58% | 88% |
+| < 30% | 37% | 85% |
 
 On-time tool calls (%), pooled over AlgoTune, Terminal-Bench 4.0 (Sonnet and DeepSeek) and Terminal-Bench Science. Overcommit loses on-time calls as fewer sandboxes are waiting on the model; QuicSand stays at 85–96%.
 

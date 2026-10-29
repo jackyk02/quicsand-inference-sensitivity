@@ -18,8 +18,7 @@ HERE = Path(__file__).resolve().parent
 OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else HERE.parent / "figures"
 MIN_JUDGED = 20  # a window with fewer judged tool calls says nothing about on-time tool calls
 MIN_WINDOWS = 3  # cells with fewer windows are drawn hollow
-# Most inference time on the left, so the axis reads toward faster models (less time waiting) on the right.
-BINS = [(0.7, 1.01, ">70"), (0.5, 0.7, "50–70"), (0.3, 0.5, "30–50"), (0.0, 0.3, "<30")]
+BINS = [(0.0, 0.3, "<30"), (0.3, 0.5, "30–50"), (0.5, 0.7, "50–70"), (0.7, 1.01, ">70")]
 # Overcommit (threshold 1.0) in the paper's vermillion, QuicSand in its green; markers and
 # line styles are the second channel.
 SERIES = [("overcommit-1.0", "Overcommit", style.VERMILLION, "s", "--"),
@@ -100,9 +99,9 @@ def main() -> None:
     # The gap the figure is about: QuicSand against the most aggressive threshold where
     # the fewest sandboxes are waiting on the model.
     (_, qs, _), (_, oc, _) = series(agg, "all", "quicksand", "on-time tool calls"), series(agg, "all", "overcommit-1.0", "on-time tool calls")
-    ax.annotate("", xy=(2.88, qs[-1] - 1), xytext=(2.88, oc[-1] + 1),
+    ax.annotate("", xy=(0.12, qs[0] - 1), xytext=(0.12, oc[0] + 1),
                 arrowprops=dict(arrowstyle="<->", color=style.GREY, lw=0.7, shrinkA=0, shrinkB=0))
-    ax.text(2.8, (qs[-1] + oc[-1]) / 2, f"+{qs[-1] - oc[-1]:.0f} pts", fontsize=7, color=style.GREY, va="center", ha="right")
+    ax.text(0.2, (qs[0] + oc[0]) / 2, f"+{qs[0] - oc[0]:.0f} pts", fontsize=7, color=style.GREY, va="center")
     style.legend_above(ax, ncol=2)
     for p in style.save(fig, OUT / "on_time_vs_inference_share"):
         print(p)

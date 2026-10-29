@@ -1,4 +1,4 @@
-"""Per-window median model latency and fleet inference share vs. fidelity, from existing replay runs.
+"""Per-window fleet inference share vs. on-time tool calls, from existing replay runs.
 
 Usage: python windows.py OUT.csv bench/recording
 Each run is cut into WINDOW_MIN windows. Per window: the share of resident sandbox-time spent
@@ -11,7 +11,6 @@ import hashlib
 import json
 import os
 import pickle
-import statistics
 import sys
 from pathlib import Path
 
@@ -58,7 +57,7 @@ def main() -> None:
     with open(out, "a", newline="") as f:
         w = csv.writer(f)
         if new:
-            w.writerow(["recording", "run", "window", "inference_share", "resident_h", "judged", "on_time", "tool_calls_done", "fleet_usd_per_h", "median_model_s", "model_calls"])
+            w.writerow(["recording", "run", "window", "inference_share", "resident_h", "judged", "on_time", "tool_calls_done", "fleet_usd_per_h"])
         for run in runs:
             a = compare.analyse(ref, run, 1.10, 1000, 0, 16, exclude, "max")
             starts = compare.harness_starts(run)
@@ -66,7 +65,6 @@ def main() -> None:
             span = max(a["rep_tool_done"] + [r[0] for r in a["rows"]])
             n = int(span * 60 // WINDOW_MIN) + 1
             wait = [0.0] * n
-            lat = [[] for _ in range(n)]
             resident = [0.0] * n
 
             def add(acc, lo, hi):  # hours since t0 -> the overlap with each window
@@ -85,9 +83,6 @@ def main() -> None:
                     if st["request_at"] is None or st["last_byte_at"] is None:
                         continue
                     add(wait, (start + st["request_at"] / 1000 - t0) / 3600, (start + st["last_byte_at"] / 1000 - t0) / 3600)
-                    h0 = (start + st["request_at"] / 1000 - t0) / 3600
-                    if 0 <= h0 < n * WINDOW_MIN / 60:
-                        lat[int(h0 * 60 // WINDOW_MIN)].append((st["last_byte_at"] - st["request_at"]) / 1000)
             judged, ontime, done = [0] * n, [0] * n, [0] * n
             for r in a["rows"]:
                 i = min(n - 1, int(r[0] * 60 // WINDOW_MIN))
@@ -100,7 +95,7 @@ def main() -> None:
             price = float(cap.get("cpu_millicores", 0)) / 1000 * 0.00003942 * 3600 + float(cap.get("memory_bytes", 0)) / (1 << 30) * 0.00000667 * 3600
             for i in range(n):
                 if resident[i] > 0:
-                    w.writerow([rec, run.name, i, round(wait[i] / resident[i], 4), round(resident[i], 3), judged[i], ontime[i], done[i], round(price, 3), round(statistics.median(lat[i]), 3) if lat[i] else '', len(lat[i])])
+                    w.writerow([rec, run.name, i, round(wait[i] / resident[i], 4), round(resident[i], 3), judged[i], ontime[i], done[i], round(price, 3)])
             f.flush()
             print(f"{rec} {run.name}: {n} windows", flush=True)
 

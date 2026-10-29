@@ -17,4 +17,3 @@ files=("$tmp"/*.csv)
 { head -1 "${files[0]}"; for f in "${files[@]}"; do tail -n +2 "$f"; done; } > "$HERE/data/windows.csv"
 rm -r "$tmp"
 "$PY" "$HERE/scripts/plot_share.py"
-"$PY" "$HERE/scripts/plot_latency.py"

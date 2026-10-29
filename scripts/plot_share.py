@@ -1,4 +1,4 @@
-"""Fidelity against the fleet's inference share, from win-all.csv.
+"""On-time tool calls against the fleet inference share, from data/windows.csv.
 
 Writes eval_inference_share.{pdf,png} (double column: on-time tool calls per workload) and
 eval_inference_share_pooled.{pdf,png} (single column: on-time tool calls pooled over workloads).
@@ -29,7 +29,7 @@ PANELS = [("algotune/run4-max-50", "AlgoTune\nSonnet"), ("algotune/run1-deepseek
           ("terminal-bench-science/run1-rand50", "Terminal-Bench Science\nSonnet")]
 
 
-# The metrics, as the axes state them. Fidelity: a tool call is on time when its execution
+# The metrics, as the axes state them. On-time tool call: a tool call is on time when its execution
 # (proxy hold excluded) takes at most 1.1x the slowest of five uncontended strict runs of the same
 # call (1 s floor). Inference share: per 10-minute window, sandbox-time spent waiting on a model
 # response over sandbox-time resident.

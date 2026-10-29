@@ -8,9 +8,8 @@ Existing TapeBox replay runs are cut into 10-minute windows. For each window we 
 
 - **On-time tool call (%)**: the share of judged tool calls whose execution time (proxy holds excluded) is at most 1.10x the slowest of five uncontended strict-reservation reruns of the same call, with reference times floored at 1 s.
 - **Share of sandbox time waiting on the model** (`inference_share`): time spent between a model request and its last response byte, divided by resident sandbox time.
-- **Median model response latency** (`median_model_s`): the median request-to-last-byte time of the model calls issued in the window.
 
-Windows with fewer than 20 judged tool calls are dropped (for latency, also windows with fewer than 5 model calls). We compare QuicSand (`quicksand-v6` and `quicksand-v7` pooled) with `overcommit-1.0`, shown as "Overcommit".
+Windows with fewer than 20 judged tool calls are dropped. We compare QuicSand (`quicksand-v6` and `quicksand-v7` pooled) with `overcommit-1.0`, shown as "Overcommit".
 
 ## Results
 
@@ -23,16 +22,7 @@ Windows with fewer than 20 judged tool calls are dropped (for latency, also wind
 
 On-time tool calls (%), pooled over AlgoTune, Terminal-Bench 4.0 (Sonnet and DeepSeek) and Terminal-Bench Science. Overcommit loses on-time calls as fewer sandboxes are waiting on the model; QuicSand stays at 85–96%.
 
-| Median model latency per window | Overcommit | QuicSand |
-|---|---|---|
-| < 5 s | 76% | 90% |
-| 5–10 s | 46% | 89% |
-| 10–15 s | 66% | 91% |
-| > 15 s | 49% | 94% |
-
-Median latency shows no clean trend for Overcommit once workloads are pooled: windows with different latencies come from different workloads and models (for example AlgoTune with Sonnet is almost entirely above 13 s), so latency is confounded with load. The share-of-time metric captures the load effect directly.
-
-Both analyses are observational. A controlled sweep (TapeBox `--speed`) would separate load from latency.
+The analysis is observational. A controlled sweep (TapeBox `--speed`) would separate load from latency.
 
 ## Layout
 
@@ -41,12 +31,11 @@ data/windows.csv       one row per (recording, policy run, 10-min window); 552 r
 scripts/reproduce.sh         runs the whole pipeline
 scripts/extract_windows.py   builds windows.csv from TapeBox replay output (needs the raw traces)
 scripts/plot_share.py        figures against share of sandbox time waiting on the model
-scripts/plot_latency.py      figures against median model latency
 figures/                     the generated PDFs and PNGs
 APPENDIX_B.md                the paper text and captions
 ```
 
-`windows.csv` columns: `recording, run, window, inference_share, resident_h, judged, on_time, tool_calls_done, fleet_usd_per_h, median_model_s, model_calls`. The `fleet_usd_per_h` column is left over from an earlier cost analysis and is unused.
+`windows.csv` columns: `recording, run, window, inference_share, resident_h, judged, on_time, tool_calls_done, fleet_usd_per_h`. The `fleet_usd_per_h` column is left over from an earlier cost analysis and is unused.
 
 ## Reproduce
 
@@ -59,11 +48,11 @@ export TAPEBOX=$PWD/TapeBox
 scripts/reproduce.sh        # traces -> data/windows.csv -> figures/
 ```
 
-`reproduce.sh` runs `extract_windows.py` on the five recordings (AlgoTune with Sonnet and DeepSeek, Terminal-Bench 4.0 with Sonnet and DeepSeek, Terminal-Bench Science), concatenates the results into `data/windows.csv`, and redraws all four figures. Extraction is the slow step (hours on a cold cache; the TapeBox index and analysis caches are written next to the scripts and speed up reruns).
+`reproduce.sh` runs `extract_windows.py` on the five recordings (AlgoTune with Sonnet and DeepSeek, Terminal-Bench 4.0 with Sonnet and DeepSeek, Terminal-Bench Science), concatenates the results into `data/windows.csv`, and redraws both figures. Extraction is the slow step (hours on a cold cache; the TapeBox index and analysis caches are written next to the scripts and speed up reruns).
 
 `extract_windows.py` calls TapeBox's `tapecollect.plot.compare` with `--reference-stat max`, a 1.10 threshold and a 1000 ms floor, the on-time definition from TapeBox commit 5a1580d.
 
-To redraw only the figures from the committed CSV, skip the extraction: `$TAPEBOX/.venv/bin/python scripts/plot_share.py` and `scripts/plot_latency.py` (any Python with `matplotlib` works if `TAPEBOX` points at a TapeBox checkout, which supplies the plot style module).
+To redraw only the figures from the committed CSV, skip the extraction: `$TAPEBOX/.venv/bin/python scripts/plot_share.py` (any Python with `matplotlib` works if `TAPEBOX` points at a TapeBox checkout, which supplies the plot style module).
 
 ## Caveats
 

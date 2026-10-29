@@ -34,8 +34,8 @@ PANELS = [("algotune/run4-max-50", "AlgoTune\nSonnet"), ("algotune/run1-deepseek
 # call (1 s floor). Inference share: per 10-minute window, sandbox-time spent waiting on a model
 # response over sandbox-time resident.
 Y_LABEL = "On-time tool call (%)"
-X_LABEL = "Model inference time (% of sandbox time), per 10-min window"
-X_LABEL_SHORT = "Model inference time (% of sandbox time),\nper 10-min window"
+X_LABEL = "Model Inference Time (% of sandbox time), per 10-min window"
+X_LABEL_SHORT = "Model Inference Time (% of sandbox time),\nper 10-min window"
 
 
 def family(run: str) -> str:

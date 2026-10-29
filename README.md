@@ -7,13 +7,13 @@ Code, data and figures behind Appendix B of the QuicSand paper ("Sensitivity to 
 Existing TapeBox replay runs are cut into 10-minute windows. For each window we record:
 
 - **On-time tool call (%)**: the share of judged tool calls whose execution time (proxy holds excluded) is at most 1.10x the slowest of five uncontended strict-reservation reruns of the same call, with reference times floored at 1 s.
-- **Model inference time (% of sandbox time)** (`inference_share`, the x-axis of the figures): time spent between a model request and its last response byte, divided by resident sandbox time, per 10-minute window.
+- **Model Inference Time (% of sandbox time)** (`inference_share`, the x-axis of the figures): time spent between a model request and its last response byte, divided by resident sandbox time, per 10-minute window.
 
 Windows with fewer than 20 judged tool calls are dropped. We compare QuicSand (`quicksand-v6` and `quicksand-v7` pooled) with `overcommit-1.0`, shown as "Overcommit".
 
 ## Results
 
-| Model inference time (% of sandbox time) | Overcommit | QuicSand |
+| Model Inference Time (% of sandbox time) | Overcommit | QuicSand |
 |---|---|---|
 | < 30% | 37% | 85% |
 | 30–50% | 58% | 88% |
@@ -22,7 +22,7 @@ Windows with fewer than 20 judged tool calls are dropped. We compare QuicSand (`
 
 On-time tool calls (%), pooled over AlgoTune, Terminal-Bench 4.0 (Sonnet and DeepSeek) and Terminal-Bench Science. Overcommit loses on-time calls as fewer sandboxes are waiting on the model; QuicSand stays at 85–96%.
 
-![On-time tool call (%) against model inference time](figures/on_time_vs_inference_share.png)
+![On-time tool call (%) against Model Inference Time](figures/on_time_vs_inference_share.png)
 
 Per workload (hollow markers: fewer than three 10-minute windows in the bin):
 

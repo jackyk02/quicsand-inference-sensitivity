@@ -6,7 +6,6 @@ Under overcommit, the percentage of on-time tool calls drops sharply as inferenc
 
 Figure 14 shows the same trend within individual workloads. On AlgoTune with Sonnet, overcommit keeps 35–37% of calls on time when 30–70% of sandbox time is spent waiting on the model, compared with 94–95% for QuicSand. This analysis is observational: windows in which few sandboxes wait on the model also tend to be the most heavily loaded, so the inference share is correlated with load as well as with model latency. A controlled sweep of model latency would separate these effects. Taken together, the results suggest that QuicSand's advantage over oversubscription grows as model inference becomes faster, which matches the trend in model cost and capability described in Section 2.
 
-(LHC: A controlled replay at scaled model latency (TapeBox `--speed`) would confirm this.)
 
 **Figure 13.** Percentage of on-time tool calls against the share of sandbox time spent waiting on the model, pooled over all judged tool calls of AlgoTune and Terminal-Bench 4.0 (both models) and Terminal-Bench Science. Each run is divided into 10-minute windows, and windows are grouped by the fraction of resident sandbox time spent waiting for a model response; windows with fewer than 20 judged calls are omitted. A call is on time when its execution time, excluding proxy holds, is at most 1.1× the slowest of five uncontended strict-reservation runs of the same call, with reference times floored at 1 s. Figure 14 breaks the result down by workload.
 
